@@ -1,0 +1,126 @@
+services:
+  dns-server:
+    build:
+      context: ./dns-server
+      dockerfile: Dockerfile
+    container_name: dns-server
+    volumes:
+      - ./dns-server/bind9:/etc/bind
+    networks:
+      ca-network:
+        ipv4_address: 192.168.2.10
+    healthcheck:
+      test: ["CMD-SHELL", "/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  root-ca:
+    build:
+      context: ./root-ca
+      dockerfile: Dockerfile
+    container_name: root-ca
+    volumes:
+      - ./shared-data:/shared-data
+    networks:
+      ca-network:
+        ipv4_address: 192.168.2.2
+    depends_on:
+      dns-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -f https://localhost:9000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  intermediate-ca:
+    build:
+      context: ./ca-intermediate
+      dockerfile: Dockerfile
+    container_name: intermediate-ca
+    volumes:
+      - ./shared-data:/shared-data
+    networks:
+      ca-network:
+        ipv4_address: 192.168.2.3
+    depends_on:
+      root-ca:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -f https://localhost:9000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web-server:
+    image: nginx:latest
+    container_name: web-server
+    volumes:
+      - ./web-server/html:/usr/share/nginx/html
+      - ./web-server/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./shared-data:/shared-data
+    networks:
+      web-network:
+        ipv4_address: 192.168.3.11
+    depends_on:
+      intermediate-ca:
+        condition: service_healthy
+    command:
+      - "/bin/sh"
+      - "-c"
+      - |
+        until [ -f /shared-data/web.crt ] && [ -f /shared-data/web.key ]; do
+          echo "Waiting for issued certs…"
+          sleep 2
+        done
+        echo "Starting Nginx with SSL…"
+        exec nginx -g "daemon off;"
+    healthcheck:
+      test: ["CMD-SHELL",
+             "test -f /shared-data/web.crt && test -f /shared-data/web.key && curl -kIf https://localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  nat-masquerade:
+    build:
+      context: ./nat-masquerade
+      dockerfile: Dockerfile
+    container_name: nat-masquerade
+    privileged: true
+    networks:
+      client-network:
+        ipv4_address: 192.168.1.12
+      ca-network:
+        ipv4_address: 192.168.2.12
+      web-network:
+        ipv4_address: 192.168.3.12
+    depends_on:
+      dns-server:
+        condition: service_healthy
+    ports:
+      - "53:53/udp"
+      - "80:80"
+      - "443:443"
+      - "9000:9000"
+      - "9001:9000"
+
+networks:
+  client-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+  ca-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.2.0/24
+  web-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24

@@ -1,0 +1,11 @@
+$TTL 604800
+@   IN  SOA ns1.itic.lan. admin.itic.lan. (
+            1         ; Serial
+            604800     ; Refresh
+            86400      ; Retry
+            2419200    ; Expire
+            604800 )   ; Negative Cache TTL
+;
+@       IN  NS      ns1.itic.lan.
+10      IN  PTR     ns1.itic.lan.
+11      IN  PTR     web.itic.lan.

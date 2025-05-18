@@ -1,0 +1,7 @@
+- hosts: all
+  become: yes
+  vars:
+    project_path: /home/azureuser/dat_project
+  roles:
+    - docker_install
+    - deploy_project

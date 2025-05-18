@@ -1,0 +1,15 @@
+# Ignore git metadata
+.git
+.gitignore
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Ignore any OS metadata files
+.DS_Store
+Thumbs.db
+
+# Ignore shared-data if you don't want to send generated files inside Docker build context
+shared-data/

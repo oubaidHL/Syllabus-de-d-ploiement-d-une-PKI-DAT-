@@ -1,0 +1,25 @@
+# Ignore generated certificates and keys (shared-data contains runtime/generated files)
+shared-data/*
+
+# Ignore terraform state and cache files
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform.lock.hcl
+
+# Ignore ansible cache or temp files if any
+ansible/*.retry
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor and IDE folders
+.vscode/
+.idea/
+*.swp
