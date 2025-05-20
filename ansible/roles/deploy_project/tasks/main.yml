@@ -1,22 +1,5 @@
 ---
-- name: Create project directory on remote
-  file:
-    path: "{{ project_path }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0755'
-
-- name: Copy project files to remote server
-  synchronize:
-    src: ../../app/
-    dest: "{{ project_path }}/"
-    rsync_opts:
-      - "--chmod=Du=rwx,Dg=rx,Do=rx,Fu=rw,Fg=r,Fo=r"
-  delegate_to: localhost
-
-- name: Ensure docker-compose stack is up and running
-  community.docker.docker_compose:
-    project_src: "{{ project_path }}"
+- name: Run docker-compose up -d in the app directory
+  community.docker.docker_compose_v2:
+    project_src: "{{ clone_dest }}/app"
     state: present
-    restarted: yes

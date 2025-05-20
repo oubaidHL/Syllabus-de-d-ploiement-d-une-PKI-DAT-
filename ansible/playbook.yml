@@ -1,7 +1,8 @@
 - hosts: all
-  become: yes
+  become: true
   vars:
-    project_path: /home/azureuser/dat_project
+    git_repo_url: "https://github.com/oubaidHL/Syllabus-de-d-ploiement-d-une-PKI-DAT-.git"
+    clone_dest: "/opt/Syllabus-de-d-ploiement-d-une-PKI-DAT-"
   roles:
-    - docker_install
+    - tools_install
     - deploy_project
