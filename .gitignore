@@ -1,5 +1,5 @@
 # Ignore generated certificates and keys (shared-data contains runtime/generated files)
-shared-data/*
+app/shared-data
 
 # Ignore terraform state and cache files
 terraform/.terraform/

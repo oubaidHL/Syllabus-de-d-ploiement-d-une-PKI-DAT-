@@ -1,32 +1,4 @@
 ---
-- name: Remove old Docker apt source list if exists
-  become: true
-  file:
-    path: /etc/apt/sources.list.d/docker.list
-    state: absent
-
-- name: Create /etc/apt/keyrings directory for Docker
-  become: true
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-
-- name: Download Docker official GPG key (docker.asc)
-  become: true
-  get_url:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-
-- name: Add Docker repository
-  become: true
-  apt_repository:
-    repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
-    filename: docker
-    state: present
-    update_cache: yes
-
 - name: Update apt package index
   become: true
   apt:
@@ -42,6 +14,33 @@
       - lsb-release
       - git
     state: present
+    update_cache: yes
+
+- name: Create /etc/apt/keyrings directory for Docker
+  become: true
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker official GPG key (docker.asc)
+  become: true
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+
+- name: Add Docker repository (amd64)
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
+    filename: docker
+    state: present
+    update_cache: yes
+
+- name: Update apt package index
+  become: true
+  apt:
     update_cache: yes
 
 - name: Install Docker packages
