@@ -14,6 +14,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    dns:
+      - 192.168.2.10
 
   root-ca:
     build:
@@ -25,6 +27,8 @@ services:
     networks:
       ca-network:
         ipv4_address: 192.168.2.2
+    dns:
+      - 192.168.2.10
     depends_on:
       dns-server:
         condition: service_healthy
@@ -45,6 +49,8 @@ services:
     networks:
       ca-network:
         ipv4_address: 192.168.2.3
+    dns:
+      - 192.168.2.10
     depends_on:
       root-ca:
         condition: service_healthy
@@ -65,6 +71,8 @@ services:
     networks:
       web-network:
         ipv4_address: 192.168.3.11
+    dns:
+      - 192.168.3.12
     depends_on:
       intermediate-ca:
         condition: service_healthy
@@ -107,6 +115,8 @@ services:
       - "443:443"
       - "9000:9000"
       - "9001:9000"
+    dns:
+      - 192.168.2.10
 
 networks:
   client-network:
